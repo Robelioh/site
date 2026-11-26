@@ -11,6 +11,7 @@ export const CONFIG = {
   razaoSocial: "TE ATENDE TECNOLOGIA EM GESTAO LTDA",
   cnpj: "51.366.373/0001-11",
   produto: "TeAtende",
+  site: "https://rbitecnologia.com.br",
   whatsapp: "5534999440693", // DDI + DDD + número, só dígitos
   whatsappExibir: "(34) 99944-0693",
   email: "comercial@rbitecnologia.com.br",
@@ -48,9 +49,39 @@ export const MODULOS = {
   entregas: "Pedidos e entregas",
 };
 
+// Descrição curta de cada módulo (usada nas páginas por segmento).
+// Derivadas do texto já publicado na home e dos itens de "solucoes" de cada segmento: valide com quem conhece o produto.
+export const MODULOS_DESC = {
+  nfe: "Emissão, cancelamento, carta de correção e inutilização de NF-e, com XML armazenado e enviado ao contador.",
+  nfce: "Frente de caixa com venda rápida no balcão, várias formas de pagamento, fechamento de caixa por operador e emissão de NFC-e.",
+  cte: "Emissão e cancelamento de CT-e a partir do cadastro da carga, com XML armazenado.",
+  mdfe: "Emissão e encerramento de MDF-e sem redigitar os dados do CT-e.",
+  estoque: "Estoque mínimo, inventário e histórico de movimentação, com baixa automática a cada venda.",
+  compras: "Entrada de mercadoria por XML do fornecedor e pedidos de compra com histórico.",
+  financeiro: "Contas a pagar e a receber geradas pelas vendas e compras, com fluxo de caixa e controle de inadimplência.",
+  lote: "Baixa em lote: quite dezenas de títulos, pagamentos ou recebimentos, de uma só vez.",
+  os: "Ordem de serviço com orçamento, peças e mão de obra, ligada ao estoque e ao faturamento.",
+  producao: "Ficha técnica para calcular o consumo de matéria-prima e o custo de produção, ligada ao pedido e ao faturamento.",
+  balanca: "Integração com balança para pesagem, com ticket de pesagem e leitura de etiqueta no caixa.",
+  frota: "Custos de frete, pedágio e combustível ligados à viagem, para saber o resultado de cada uma.",
+  mensalidade: "Cobranças recorrentes, controle de inadimplência e baixa em lote dos pagamentos recebidos.",
+  obras: "Centro de custo por obra em compras e contas a pagar, com acompanhamento do custo realizado.",
+  entregas: "Lançamento de pedidos pelo telefone, acerto por entregador e controle de vasilhames por cliente.",
+};
+
+// Documentos fiscais: explicação factual (não é promessa de funcionalidade).
+export const DOCS_FISCAIS = {
+  nfe: ["NF-e", "Nota Fiscal Eletrônica (modelo 55)", "Documento fiscal digital da venda de mercadorias, autorizado pela SEFAZ antes da saída do produto."],
+  nfce: ["NFC-e", "Nota Fiscal de Consumidor Eletrônica (modelo 65)", "Documento fiscal digital da venda no varejo ao consumidor final, emitido no ponto de venda."],
+  cte: ["CT-e", "Conhecimento de Transporte Eletrônico", "Documento fiscal que a transportadora emite para registrar a prestação do serviço de transporte de cargas."],
+  mdfe: ["MDF-e", "Manifesto Eletrônico de Documentos Fiscais", "Reúne, em uma única viagem, os documentos fiscais da carga transportada e precisa ser encerrado ao fim do percurso."],
+};
+
 export const SEGMENTOS = [
   {
     id: "transporte",
+    slug: "transportadora", // URL: /sistema-para-transportadora/
+    kw: "transportadora", // como o cliente busca (aparece em título, H1 e textos)
     nome: "Transportadora",
     grupo: "logistica",
     icone: "truck",
@@ -70,6 +101,8 @@ export const SEGMENTOS = [
   },
   {
     id: "comercio",
+    slug: "comercio", // URL: /sistema-para-comercio/
+    kw: "comércio", // como o cliente busca (aparece em título, H1 e textos)
     nome: "Comércio em geral",
     grupo: "comercio",
     icone: "store",
@@ -89,6 +122,8 @@ export const SEGMENTOS = [
   },
   {
     id: "botinas",
+    slug: "fabrica-de-calcados", // URL: /sistema-para-fabrica-de-calcados/
+    kw: "fábrica de calçados e botinas", // como o cliente busca (aparece em título, H1 e textos)
     nome: "Fábrica de botinas e calçados",
     grupo: "industria",
     icone: "boot",
@@ -108,6 +143,8 @@ export const SEGMENTOS = [
   },
   {
     id: "oficina",
+    slug: "oficina-mecanica", // URL: /sistema-para-oficina-mecanica/
+    kw: "oficina mecânica", // como o cliente busca (aparece em título, H1 e textos)
     nome: "Oficina de veículos",
     grupo: "servicos",
     icone: "wrench",
@@ -127,6 +164,8 @@ export const SEGMENTOS = [
   },
   {
     id: "agricolas",
+    slug: "maquinas-agricolas", // URL: /sistema-para-maquinas-agricolas/
+    kw: "máquinas agrícolas", // como o cliente busca (aparece em título, H1 e textos)
     nome: "Máquinas agrícolas e equipamentos",
     grupo: "agro",
     icone: "tractor",
@@ -146,6 +185,8 @@ export const SEGMENTOS = [
   },
   {
     id: "construtora",
+    slug: "construtora", // URL: /sistema-para-construtora/
+    kw: "construtora", // como o cliente busca (aparece em título, H1 e textos)
     nome: "Construtora",
     grupo: "industria",
     icone: "building",
@@ -165,6 +206,8 @@ export const SEGMENTOS = [
   },
   {
     id: "bebidas",
+    slug: "distribuidora-de-bebidas", // URL: /sistema-para-distribuidora-de-bebidas/
+    kw: "distribuidora de bebidas", // como o cliente busca (aparece em título, H1 e textos)
     nome: "Disk bebidas e distribuidora",
     grupo: "comercio",
     icone: "bottle",
@@ -184,6 +227,8 @@ export const SEGMENTOS = [
   },
   {
     id: "agropecuaria",
+    slug: "agropecuaria", // URL: /sistema-para-agropecuaria/
+    kw: "agropecuária", // como o cliente busca (aparece em título, H1 e textos)
     nome: "Agropecuária",
     grupo: "agro",
     icone: "leaf",
@@ -203,6 +248,8 @@ export const SEGMENTOS = [
   },
   {
     id: "eletrico",
+    slug: "material-eletrico", // URL: /sistema-para-material-eletrico/
+    kw: "loja de material elétrico", // como o cliente busca (aparece em título, H1 e textos)
     nome: "Material elétrico",
     grupo: "comercio",
     icone: "bolt",
@@ -222,6 +269,8 @@ export const SEGMENTOS = [
   },
   {
     id: "pecas",
+    slug: "loja-de-pecas", // URL: /sistema-para-loja-de-pecas/
+    kw: "loja de peças", // como o cliente busca (aparece em título, H1 e textos)
     nome: "Loja de peças",
     grupo: "comercio",
     icone: "gear",
@@ -241,6 +290,8 @@ export const SEGMENTOS = [
   },
   {
     id: "sindicato",
+    slug: "sindicato-e-associacao", // URL: /sistema-para-sindicato-e-associacao/
+    kw: "sindicato e associação", // como o cliente busca (aparece em título, H1 e textos)
     nome: "Sindicato e associação",
     grupo: "pessoas",
     icone: "users",
@@ -260,6 +311,8 @@ export const SEGMENTOS = [
   },
   {
     id: "residuos",
+    slug: "gestao-de-residuos", // URL: /sistema-para-gestao-de-residuos/
+    kw: "empresa de gestão de resíduos", // como o cliente busca (aparece em título, H1 e textos)
     nome: "Gestão de resíduos",
     grupo: "logistica",
     icone: "recycle",
@@ -279,6 +332,8 @@ export const SEGMENTOS = [
   },
   {
     id: "areia",
+    slug: "areia-e-brita", // URL: /sistema-para-areia-e-brita/
+    kw: "areia, brita e agregados", // como o cliente busca (aparece em título, H1 e textos)
     nome: "Areia, brita e agregados",
     grupo: "industria",
     icone: "mountain",
@@ -298,6 +353,8 @@ export const SEGMENTOS = [
   },
   {
     id: "joalheria",
+    slug: "joalheria", // URL: /sistema-para-joalheria/
+    kw: "relojoaria e joalheria", // como o cliente busca (aparece em título, H1 e textos)
     nome: "Relojoaria e joalheria",
     grupo: "comercio",
     icone: "gem",
@@ -317,6 +374,8 @@ export const SEGMENTOS = [
   },
   {
     id: "padaria",
+    slug: "padaria", // URL: /sistema-para-padaria/
+    kw: "padaria e confeitaria", // como o cliente busca (aparece em título, H1 e textos)
     nome: "Padaria e confeitaria",
     grupo: "comercio",
     icone: "bread",
@@ -336,6 +395,8 @@ export const SEGMENTOS = [
   },
   {
     id: "danca",
+    slug: "estudio-de-danca", // URL: /sistema-para-estudio-de-danca/
+    kw: "estúdio de dança e academia", // como o cliente busca (aparece em título, H1 e textos)
     nome: "Estúdio de dança e academia",
     grupo: "pessoas",
     icone: "music",
@@ -347,14 +408,16 @@ export const SEGMENTOS = [
       "Matrícula e rematrícula em papel",
     ],
     solucoes: [
-      "Cadastro de alunos vinculados a turmas",
       "Mensalidades recorrentes e controle de inadimplência",
+      "Cadastro de alunos vinculados a turmas",
       "Baixa em lote dos pagamentos recebidos",
     ],
     modulos: ["mensalidade", "financeiro", "lote"],
   },
   {
     id: "balanca",
+    slug: "balancas-e-pesagem", // URL: /sistema-para-balancas-e-pesagem/
+    kw: "balanças e pesagem", // como o cliente busca (aparece em título, H1 e textos)
     nome: "Balanças e pesagem",
     grupo: "servicos",
     icone: "scale",
