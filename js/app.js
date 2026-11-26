@@ -1,6 +1,6 @@
-(() => {
-  "use strict";
+import { CONFIG, GRUPOS, MODULOS, SEGMENTOS } from "./segmentos.js";
 
+(() => {
   /* ---------- Ícones (SVG em traço) ---------- */
   const ICONES = {
     truck: '<path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
@@ -45,13 +45,21 @@
 
   /* ---------- Menu mobile e topo ---------- */
   const menu = $("#menu"), btnMenu = $("#btnMenu");
-  btnMenu.addEventListener("click", () => {
-    const aberto = menu.classList.toggle("aberto");
+  const mobile = matchMedia("(max-width: 760px)");
+  // No mobile o menu fechado fica fora da tela: `inert` o tira da ordem de foco e do leitor de tela.
+  function menuAberto(aberto) {
+    menu.classList.toggle("aberto", aberto);
     btnMenu.setAttribute("aria-expanded", aberto);
+    btnMenu.setAttribute("aria-label", aberto ? "Fechar menu" : "Abrir menu");
+    menu.inert = mobile.matches && !aberto;
+  }
+  btnMenu.addEventListener("click", () => menuAberto(!menu.classList.contains("aberto")));
+  menu.addEventListener("click", (e) => { if (e.target.closest("a")) menuAberto(false); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && menu.classList.contains("aberto")) { menuAberto(false); btnMenu.focus(); }
   });
-  menu.addEventListener("click", (e) => {
-    if (e.target.closest("a")) { menu.classList.remove("aberto"); btnMenu.setAttribute("aria-expanded", "false"); }
-  });
+  mobile.addEventListener("change", () => menuAberto(false));
+  menuAberto(false);
   const topo = $("#topo");
   addEventListener("scroll", () => topo.classList.toggle("rolado", scrollY > 8), { passive: true });
 
@@ -64,7 +72,7 @@
     const cont = SEGMENTOS.reduce((a, s) => ((a[s.grupo] = (a[s.grupo] || 0) + 1), a), {});
     const itens = [["todos", "Todos", SEGMENTOS.length], ...Object.entries(GRUPOS).filter(([k]) => cont[k]).map(([k, v]) => [k, v, cont[k]])];
     filtros.innerHTML = itens.map(([k, v, n]) =>
-      `<button class="filtro" role="tab" type="button" data-grupo="${k}" aria-selected="${k === grupoAtivo}">${esc(v)}<span>${n}</span></button>`
+      `<button class="filtro" type="button" data-grupo="${k}" aria-pressed="${k === grupoAtivo}">${esc(v)}<span>${n}</span></button>`
     ).join("");
   }
   function renderGrid() {
@@ -80,6 +88,7 @@
   filtros.addEventListener("click", (e) => {
     const b = e.target.closest(".filtro"); if (!b) return;
     grupoAtivo = b.dataset.grupo; renderFiltros(); renderGrid();
+    filtros.querySelector(`[data-grupo="${grupoAtivo}"]`).focus();
   });
   grid.addEventListener("click", (e) => {
     const b = e.target.closest(".seg"); if (b) abrirSegmento(b.dataset.id, b);
@@ -88,11 +97,10 @@
 
   /* ---------- Gaveta de detalhe ---------- */
   const gaveta = $("#gaveta"), gavConteudo = $("#gavConteudo");
-  let focoAnterior = null;
+  let empilhado = false; // true quando abrimos a gaveta com pushState (o Voltar do navegador a fecha)
 
-  function abrirSegmento(id, origem) {
+  function abrirSegmento(id, origem, { historico = true } = {}) {
     const s = SEGMENTOS.find((x) => x.id === id); if (!s) return;
-    focoAnterior = origem || document.activeElement;
     const linhas = s.dores.map((d, i) => `
       <div class="gav__linha">
         <div class="gav__dor">${esc(d)}</div>
@@ -106,47 +114,47 @@
       <h2 id="gavTitulo">${esc(s.nome)}</h2>
       <p class="gav__frase">${esc(s.frase)}</p>
       <div class="gav__bloco">
-        <h4>O problema → como o TeAtende resolve</h4>
+        <h3>O problema → como o TeAtende resolve</h3>
         <div class="gav__par">${linhas}</div>
       </div>
       <div class="gav__bloco">
-        <h4>Módulos envolvidos</h4>
+        <h3>Módulos envolvidos</h3>
         <div class="gav__mods">${s.modulos.map((m) => `<span>${esc(MODULOS[m] || m)}</span>`).join("")}</div>
       </div>
       <div class="gav__cta">
         <a class="btn btn--pri btn--lg" href="${linkZap(msg)}" target="_blank" rel="noopener">${svg("zap", 18)} Falar sobre ${esc(s.nome.toLowerCase())}</a>
         <button class="btn btn--sec btn--lg" type="button" data-agendar="${s.id}">Agendar demonstração</button>
       </div>`;
-    gaveta.hidden = false;
-    document.body.style.overflow = "hidden";
-    $(".gaveta__x").focus();
-    history.replaceState(null, "", `#segmento-${s.id}`);
+    if (gaveta.open) { history.replaceState(null, "", `#segmento-${s.id}`); return; }
+    if (historico) { history.pushState(null, "", `#segmento-${s.id}`); empilhado = true; }
+    else history.replaceState(null, "", `#segmento-${s.id}`);
+    // showModal: foco preso na gaveta, Esc fecha, resto da página fica inerte, foco volta a quem abriu
+    gaveta.showModal();
   }
-  function fecharGaveta() {
-    if (gaveta.hidden) return;
-    gaveta.hidden = true;
-    document.body.style.overflow = "";
-    history.replaceState(null, "", location.pathname + location.search);
-    if (focoAnterior && focoAnterior.focus) focoAnterior.focus();
-  }
-  gaveta.addEventListener("click", (e) => {
-    if (e.target.closest("[data-fechar]")) return fecharGaveta();
-    const ag = e.target.closest("[data-agendar]");
-    if (ag) { fecharGaveta(); preencherSegmento(ag.dataset.agendar); $("#contato").scrollIntoView(); setTimeout(() => $("#fNome").focus({ preventScroll: true }), 400); }
+  // Qualquer fechamento (X, Esc, clique no fundo, Voltar) passa por aqui.
+  gaveta.addEventListener("close", () => {
+    if (empilhado) { empilhado = false; history.back(); }
+    else if (location.hash.startsWith("#segmento-")) history.replaceState(null, "", location.pathname + location.search);
   });
-  document.addEventListener("keydown", (e) => {
-    if (gaveta.hidden) return;
-    if (e.key === "Escape") return fecharGaveta();
-    if (e.key === "Tab") { // prende o foco dentro da gaveta
-      const f = gaveta.querySelectorAll("a[href],button:not([disabled])");
-      const p = f[0], u = f[f.length - 1];
-      if (e.shiftKey && document.activeElement === p) { e.preventDefault(); u.focus(); }
-      else if (!e.shiftKey && document.activeElement === u) { e.preventDefault(); p.focus(); }
+  // Botão Voltar (ou gesto no celular) com a gaveta aberta: fecha a gaveta, não sai da página.
+  addEventListener("popstate", () => { if (gaveta.open) { empilhado = false; gaveta.close(); } });
+  gaveta.addEventListener("click", (e) => {
+    // e.target === gaveta: clique no fundo (::backdrop) ou fora do painel
+    if (e.target === gaveta || e.target.closest("[data-fechar]")) return gaveta.close();
+    const ag = e.target.closest("[data-agendar]");
+    if (ag) {
+      // sem history.back() aqui: ele competiria com o scroll até o formulário
+      empilhado = false;
+      history.replaceState(null, "", location.pathname + location.search);
+      gaveta.close();
+      preencherSegmento(ag.dataset.agendar);
+      $("#contato").scrollIntoView();
+      setTimeout(() => $("#fNome").focus({ preventScroll: true }), 400);
     }
   });
   // Link direto: site/#segmento-padaria
   const m = location.hash.match(/^#segmento-(.+)$/);
-  if (m) setTimeout(() => abrirSegmento(m[1]), 100);
+  if (m) setTimeout(() => abrirSegmento(m[1], null, { historico: false }), 100);
 
   /* ---------- Busca por intenção ---------- */
   const campo = $("#campoBusca"), sug = $("#buscaSug");
@@ -171,7 +179,7 @@
   function mostrarSug() {
     if (!resultados.length) {
       sug.innerHTML = campo.value.trim().length > 1
-        ? `<li role="option" data-outro="1"><span>Não achou? Fale com a gente sobre “${esc(campo.value.trim())}”</span><small>WhatsApp</small></li>`
+        ? `<li role="option" id="sug-0" data-outro="1" aria-selected="${sel === 0}"><span>Não achou? Fale com a gente sobre “${esc(campo.value.trim())}”</span><small>WhatsApp</small></li>`
         : "";
     } else {
       sug.innerHTML = resultados.map((s, i) =>
@@ -179,10 +187,14 @@
       ).join("");
     }
     sug.hidden = !sug.innerHTML;
+    campo.setAttribute("aria-expanded", String(!sug.hidden));
+    if (sel >= 0 && !sug.hidden) campo.setAttribute("aria-activedescendant", `sug-${sel}`);
+    else campo.removeAttribute("aria-activedescendant");
   }
   function escolher(li) {
     if (!li) return;
     sug.hidden = true;
+    campo.setAttribute("aria-expanded", "false");
     if (li.dataset.outro) {
       window.open(linkZap(`Olá! Tenho uma empresa de ${campo.value.trim()} e quero saber se o ${CONFIG.produto} atende.`), "_blank", "noopener");
       return;
@@ -204,9 +216,9 @@
     const n = sug.querySelectorAll("li").length;
     if (e.key === "ArrowDown" && n) { e.preventDefault(); sel = (sel + 1) % n; mostrarSug(); }
     else if (e.key === "ArrowUp" && n) { e.preventDefault(); sel = (sel - 1 + n) % n; mostrarSug(); }
-    else if (e.key === "Escape") { sug.hidden = true; }
+    else if (e.key === "Escape") { sug.hidden = true; campo.setAttribute("aria-expanded", "false"); }
   });
-  campo.addEventListener("blur", () => setTimeout(() => (sug.hidden = true), 150));
+  campo.addEventListener("blur", () => setTimeout(() => { sug.hidden = true; campo.setAttribute("aria-expanded", "false"); }, 150));
   sug.addEventListener("mousedown", (e) => { e.preventDefault(); escolher(e.target.closest("li")); });
   $("#formBusca").addEventListener("submit", (e) => {
     e.preventDefault();
@@ -222,32 +234,10 @@
     .map((s) => `<button class="chip" type="button" data-id="${s.id}">${esc(s.nome.split(" ")[0])}</button>`).join("");
   $("#chipsRapidos").addEventListener("click", (e) => { const c = e.target.closest(".chip"); if (c) irPara(c.dataset.id); });
 
-  /* ---------- Implantação (etapas) ---------- */
-  const etapas = $("#etapas");
-  etapas.addEventListener("click", (e) => {
-    const b = e.target.closest(".etapa__btn"); if (!b) return;
-    etapas.querySelectorAll(".etapa").forEach((li) => {
-      const at = li.contains(b);
-      li.classList.toggle("ativa", at);
-      li.querySelector(".etapa__btn").setAttribute("aria-expanded", at);
-    });
-  });
-
   /* ---------- Contato ---------- */
   const fSeg = $("#fSegmento");
   fSeg.innerHTML += SEGMENTOS.map((s) => `<option value="${s.id}">${esc(s.nome)}</option>`).join("") + `<option value="outro">Outro</option>`;
   function preencherSegmento(id) { fSeg.value = id; }
-
-  $("#contatoDados").innerHTML = `
-    <li>${svg("zap", 20)}<a href="${linkZap(`Olá! Quero conhecer o ${CONFIG.produto}.`)}" target="_blank" rel="noopener">${esc(CONFIG.whatsappExibir)} <span class="fino">· WhatsApp</span></a></li>
-    <li>${svg("mail", 20)}<a href="mailto:${esc(CONFIG.email)}">${esc(CONFIG.email)}</a></li>
-    ${CONFIG.telefone ? `<li>${svg("phone", 20)}<a href="tel:+55${CONFIG.telefone.replace(/\D/g, "")}">${esc(CONFIG.telefone)}</a></li>` : ""}
-    <li>${svg("pin", 20)}<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${CONFIG.endereco}, ${CONFIG.cidade}, ${CONFIG.cep}`)}" target="_blank" rel="noopener">${esc(CONFIG.endereco)}<br><span class="fino">${esc(CONFIG.cidade)} · CEP ${esc(CONFIG.cep)}</span></a></li>`;
-  $("#rodapeLegal").innerHTML = `
-    <span>${esc(CONFIG.razaoSocial)}</span>
-    <span>CNPJ ${esc(CONFIG.cnpj)}</span>
-    <span>${esc(CONFIG.endereco)} · ${esc(CONFIG.cidade)} · CEP ${esc(CONFIG.cep)}</span>`;
-  $("#zapFlutuante").href = linkZap(`Olá! Quero conhecer o ${CONFIG.produto}.`);
 
   const fTel = $("#fTel");
   fTel.addEventListener("input", () => {
@@ -257,16 +247,27 @@
       : d.length > 2 ? d.replace(/(\d{2})(\d+)/, "($1) $2") : d;
   });
 
+  // Erro anunciado por leitor de tela (aria-invalid + mensagem ligada por aria-describedby), não só pela cor.
+  function marcarErro(el, erro) {
+    el.setAttribute("aria-invalid", String(erro));
+    const msg = $(`#erro-${el.id}`);
+    if (msg) msg.hidden = !erro;
+  }
+  $("#formContato").addEventListener("input", (e) => {
+    if (e.target.getAttribute("aria-invalid") === "true") marcarErro(e.target, false);
+  });
+
   $("#formContato").addEventListener("submit", (e) => {
     e.preventDefault();
     const f = e.target, aviso = $("#formAviso");
     let ok = true;
     f.querySelectorAll("[required]").forEach((el) => {
       const valido = el.id === "fTel" ? el.value.replace(/\D/g, "").length >= 10 : el.value.trim() !== "";
-      el.closest(".campo").classList.toggle("erro", !valido);
+      marcarErro(el, !valido);
       if (!valido && ok) { el.focus(); ok = false; }
     });
-    if (!ok) { aviso.textContent = "Preencha os campos destacados."; return; }
+    if (!ok) { aviso.textContent = "Corrija os campos indicados."; return; }
+    aviso.textContent = "";
     const seg = SEGMENTOS.find((s) => s.id === fSeg.value);
     const txt = [
       `Olá! Quero agendar uma demonstração do ${CONFIG.produto}.`,

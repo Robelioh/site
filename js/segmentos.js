@@ -6,7 +6,7 @@
    inexistente no site gera venda frustrada e cancelamento.
    ========================================================================= */
 
-const CONFIG = {
+export const CONFIG = {
   empresa: "RBI Tecnologia em Gestão",
   razaoSocial: "TE ATENDE TECNOLOGIA EM GESTAO LTDA",
   cnpj: "51.366.373/0001-11",
@@ -21,7 +21,7 @@ const CONFIG = {
   cep: "38445-560",
 };
 
-const GRUPOS = {
+export const GRUPOS = {
   comercio: "Comércio e varejo",
   industria: "Indústria e construção",
   servicos: "Serviços e oficinas",
@@ -30,7 +30,7 @@ const GRUPOS = {
   pessoas: "Associações e pessoas",
 };
 
-const MODULOS = {
+export const MODULOS = {
   nfe: "NF-e",
   nfce: "NFC-e / PDV",
   cte: "CT-e",
@@ -48,7 +48,7 @@ const MODULOS = {
   entregas: "Pedidos e entregas",
 };
 
-const SEGMENTOS = [
+export const SEGMENTOS = [
   {
     id: "transporte",
     nome: "Transportadora",
