@@ -8,7 +8,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { CONFIG, GRUPOS, MODULOS, MODULOS_DESC, DOCS_FISCAIS, SEGMENTOS } from "../js/segmentos.js";
+import { CONFIG, GRUPOS, MODULOS, MODULOS_DESC, DOCS_FISCAIS, AREAS, MODULO_AREA, SEGMENTOS } from "../js/segmentos.js";
 import { ICONES } from "../js/icones.js";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -189,7 +189,7 @@ function paginaSegmento(s) {
   secoes.push(`
       <h2>Módulos do TeAtende para ${esc(kw)}</h2>
       <div class="mods">${s.modulos.map((m) => `
-        <article class="mod"><h3>${esc(MODULOS[m])}</h3><p>${esc(MODULOS_DESC[m] || "")}</p></article>`).join("")}
+        <article class="mod"><span class="tag">${esc(AREAS[MODULO_AREA[m]].nome)}</span><h3>${esc(MODULOS[m])}</h3><p>${esc(MODULOS_DESC[m] || "")}</p></article>`).join("")}
       </div>`);
   if (docs.length) {
     secoes.push(`

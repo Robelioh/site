@@ -47,9 +47,47 @@ export const MODULOS = {
   mensalidade: "Mensalidades e cobrança",
   obras: "Centro de custo por obra",
   entregas: "Pedidos e entregas",
+  ponto: "Controle de ponto",
 };
 
-// Descrição curta de cada módulo (usada nas páginas por segmento).
+// Os 6 módulos oficiais do TeAtende. Cada um agrupa as funcionalidades de MODULOS (a classificação é uma
+// decisão de produto: ajuste aqui e rode `node scripts/gerar-paginas.mjs`).
+export const AREAS = {
+  erp: {
+    nome: "ERP",
+    resumo: "A base que conecta tudo: a venda baixa o estoque, gera o título e emite a nota, sem redigitar. Venda e frente de caixa, estoque, compras e relatórios no mesmo cadastro.",
+    itens: ["estoque", "compras", "os", "frota", "entregas", "obras"],
+  },
+  financeiro: {
+    nome: "Financeiro",
+    resumo: "Contas a pagar e a receber geradas pelas vendas e compras, com fluxo de caixa, inadimplência e baixa em lote de dezenas de títulos de uma vez.",
+    itens: ["financeiro", "lote", "mensalidade"],
+  },
+  fiscal: {
+    nome: "Fiscal",
+    resumo: "Emissão, cancelamento, carta de correção e inutilização de documentos fiscais eletrônicos, com XML armazenado e enviado ao contador.",
+    itens: ["nfe", "nfce", "cte", "mdfe"],
+  },
+  producao: {
+    nome: "Produção",
+    resumo: "Ficha técnica para calcular o consumo de matéria-prima e o custo de produção, ligada ao pedido e ao faturamento.",
+    itens: ["producao"],
+  },
+  balanca: {
+    nome: "Balança",
+    resumo: "Integração com balança para pesagem, com ticket de pesagem e leitura de etiqueta no caixa.",
+    itens: ["balanca"],
+  },
+  ponto: {
+    nome: "Ponto",
+    resumo: "Controle de ponto e da jornada dos funcionários.",
+    itens: ["ponto"],
+  },
+};
+// funcionalidade -> chave do módulo oficial (ex.: cte -> "fiscal")
+export const MODULO_AREA = Object.fromEntries(Object.entries(AREAS).flatMap(([k, a]) => a.itens.map((i) => [i, k])));
+
+// Descrição curta de cada funcionalidade (usada nas páginas por segmento).
 // Derivadas do texto já publicado na home e dos itens de "solucoes" de cada segmento: valide com quem conhece o produto.
 export const MODULOS_DESC = {
   nfe: "Emissão, cancelamento, carta de correção e inutilização de NF-e, com XML armazenado e enviado ao contador.",
@@ -67,6 +105,7 @@ export const MODULOS_DESC = {
   mensalidade: "Cobranças recorrentes, controle de inadimplência e baixa em lote dos pagamentos recebidos.",
   obras: "Centro de custo por obra em compras e contas a pagar, com acompanhamento do custo realizado.",
   entregas: "Lançamento de pedidos pelo telefone, acerto por entregador e controle de vasilhames por cliente.",
+  ponto: "Controle de ponto e da jornada dos funcionários.", // única descrição confirmada: detalhe só com o que o produto faz
 };
 
 // Documentos fiscais: explicação factual (não é promessa de funcionalidade).

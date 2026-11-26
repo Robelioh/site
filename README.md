@@ -31,7 +31,7 @@ Para enriquecer uma página de segmento, adicione campos ao objeto do segmento e
 
 - `index.html` — home (contato e rodapé legal estão no HTML, visíveis sem JS).
 - `css/style.css` — tokens de cor em `light-dark()`; o tema segue o sistema ou o botão (`[data-theme]`).
-- `js/segmentos.js` — fonte de verdade do conteúdo: `CONFIG`, segmentos, descrição dos módulos e documentos fiscais.
+- `js/segmentos.js` — fonte de verdade do conteúdo: `CONFIG`, segmentos, `AREAS` (os 6 módulos oficiais: ERP, Financeiro, Fiscal, Produção, Balança, Ponto), funcionalidades (`MODULOS`), descrições e documentos fiscais.
 - `js/app.js` (home), `js/comum.js` (tema, menu, ano — todas as páginas), `js/icones.js`.
 - `scripts/gerar-paginas.mjs` — gerador (Node 18+, sem dependências).
 - `fonts/` — Plus Jakarta Sans (latin) hospedada localmente. `img/` — logos em WebP, `og-image.png` (1200×630), `apple-touch-icon.png`.
@@ -40,4 +40,5 @@ Para enriquecer uma página de segmento, adicione campos ao objeto do segmento e
 
 - **Contato duplicado:** WhatsApp, e-mail e endereço existem no `index.html` e em `CONFIG` (as páginas geradas leem de `CONFIG`). Ao mudar, altere nos dois.
 - **Textos dos segmentos** (`js/segmentos.js`) são rascunho comercial, inclusive as descrições em `MODULOS_DESC`: remova qualquer recurso que o sistema não tenha. Revise também a terceira dor de `danca` ("Matrícula e rematrícula em papel"), cuja solução não a resolve.
+- **Módulos (`AREAS`):** a classificação das 15 funcionalidades nos 6 módulos é decisão de produto e foi feita por inferência: confirme. O **Ponto** só tem a descrição "controle de ponto e da jornada dos funcionários" e nenhum segmento o lista ainda; ao incluir `"ponto"` em `modulos` de um segmento, ele aparece na página dele.
 - Logo em SVG (hoje WebP) e política de privacidade (LGPD) ainda não existem.
