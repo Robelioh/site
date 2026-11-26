@@ -1,0 +1,59 @@
+# TeAtende — configuração do Apache (HostGator / cPanel)
+# Cada bloco usa <IfModule>: se o servidor não tiver o módulo, a regra é ignorada em vez de dar erro 500.
+# Se o site inteiro der "Erro 500" depois de subir este arquivo, renomeie-o para "htaccess.txt" e avise.
+
+DirectoryIndex index.html
+ErrorDocument 404 /404.html
+
+# ---------- HTTPS + endereço único (sem www) ----------
+# ATENÇÃO: só funciona depois que o certificado SSL estiver ativo (cPanel > SSL/TLS Status > Run AutoSSL).
+# Este arquivo assume o domínio rbitecnologia.com.br. A pasta .well-known fica de fora para o AutoSSL renovar o certificado.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # 1) www -> sem www (e já em https)
+  RewriteCond %{REQUEST_URI} !^/\.well-known/
+  RewriteCond %{HTTP_HOST} ^www\. [NC]
+  RewriteRule ^ https://rbitecnologia.com.br%{REQUEST_URI} [L,R=301]
+  # 2) http -> https (o X-Forwarded-Proto evita loop se houver proxy/CDN na frente, ex.: Cloudflare)
+  RewriteCond %{REQUEST_URI} !^/\.well-known/
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+  RewriteRule ^ https://rbitecnologia.com.br%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# ---------- Tipos de arquivo ----------
+<IfModule mod_mime.c>
+  AddType text/javascript .js .mjs
+  AddType image/webp .webp
+  AddType font/woff2 .woff2
+  AddDefaultCharset UTF-8
+</IfModule>
+
+# ---------- Compressão ----------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json application/ld+json application/xml text/xml text/plain image/svg+xml
+</IfModule>
+
+# ---------- Cache ----------
+# HTML, CSS e JS: o navegador sempre confere se mudou (resposta 304, barata). Os arquivos não têm hash no nome,
+# então cache longo faria visitantes antigos ficarem com JS velho depois de uma atualização.
+# Fontes e imagens quase nunca mudam: cache longo.
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|css|js|mjs|xml|txt)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.(woff2|webp|png|jpg|jpeg|svg|ico)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+  <FilesMatch "\.woff2$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # ---------- Segurança básica ----------
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  # HSTS: ative só quando tiver certeza de que o HTTPS está estável (é difícil de desfazer).
+  # Header always set Strict-Transport-Security "max-age=31536000"
+</IfModule>

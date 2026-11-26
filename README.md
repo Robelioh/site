@@ -27,13 +27,43 @@ Para enriquecer uma página de segmento, adicione campos ao objeto do segmento e
 - `faq: [["Pergunta?", "Resposta."], ...]` — perguntas extras, somadas às padrão (e ao schema FAQPage).
 - `slug` e `kw` — URL (`/sistema-para-<slug>/`) e a expressão que o cliente pesquisa (usada em título, H1 e textos).
 
+## Publicar no HostGator (cPanel)
+
+O site é 100% estático: basta colocar os arquivos em `public_html`. O `.htaccess` incluso cuida de HTTPS, `www` → sem `www`, cache, compressão e da página 404.
+
+**Antes de subir (importante)**
+
+1. **Veja o que já existe em `public_html`** (cPanel → Gerenciador de Arquivos). O domínio já tem e-mail, então pode haver um site ou arquivos lá. Faça backup (botão *Compress*) antes de substituir qualquer coisa. O e-mail não é afetado por trocar os arquivos do site.
+2. **Confirme o SSL ativo**: cPanel → *SSL/TLS Status* → *Run AutoSSL*. O `.htaccess` força HTTPS; sem certificado, o site fica inacessível.
+3. O `.htaccess` assume o domínio `rbitecnologia.com.br` (sem `www`). Se o site ficar em outro endereço ou em subpasta, edite o arquivo e os caminhos `/css/...` (o site precisa estar na raiz do domínio).
+
+**Subir**
+
+```bash
+bash scripts/empacotar.sh        # gera deploy/teatende-site.zip (só o que vai ao servidor)
+```
+
+1. cPanel → Gerenciador de Arquivos → `public_html` → **Carregar** o `teatende-site.zip`.
+2. Clique com o botão direito no zip → **Extract** (extraia em `public_html`). Marque *Show Hidden Files (dotfiles)* nas configurações para ver o `.htaccess`.
+3. Apague o zip do servidor depois de extrair.
+
+**Conferir depois de subir**
+
+- `http://rbitecnologia.com.br`, `https://www.rbitecnologia.com.br` e `http://www...` redirecionam para `https://rbitecnologia.com.br/`.
+- `/segmentos/`, `/sistema-para-padaria/` e um endereço inexistente (deve mostrar a página 404 do site).
+- Se o site inteiro der **Erro 500**, renomeie o `.htaccess` para `htaccess.txt` (o site volta sem as regras) e investigue.
+- Depois: envie `https://rbitecnologia.com.br/sitemap.xml` no Google Search Console.
+
+**Atualizar depois**: edite, rode `bash scripts/empacotar.sh` de novo e extraia o novo zip por cima (*Overwrite*). Alternativa, se o seu plano tiver *Git Version Control* no cPanel: clone este repositório e use um `.cpanel.yml` para copiar os arquivos (não incluído, pois depende do usuário do cPanel).
+
 ## Estrutura
 
 - `index.html` — home (contato e rodapé legal estão no HTML, visíveis sem JS).
 - `css/style.css` — tokens de cor em `light-dark()`; o tema segue o sistema ou o botão (`[data-theme]`).
 - `js/segmentos.js` — fonte de verdade do conteúdo: `CONFIG`, segmentos, `AREAS` (os 6 módulos oficiais: ERP, Financeiro, Fiscal, Produção, Balança, Ponto), funcionalidades (`MODULOS`), descrições e documentos fiscais.
 - `js/app.js` (home), `js/comum.js` (tema, menu, ano — todas as páginas), `js/icones.js`.
-- `scripts/gerar-paginas.mjs` — gerador (Node 18+, sem dependências).
+- `scripts/gerar-paginas.mjs` — gerador (Node 18+, sem dependências). `scripts/empacotar.sh` — gera o zip para o HostGator.
+- `.htaccess` — regras do Apache (HTTPS, www, cache, compressão, 404). `404.html` é gerada.
 - `fonts/` — Plus Jakarta Sans (latin) hospedada localmente. `img/` — logos em WebP, `og-image.png` (1200×630), `apple-touch-icon.png`.
 
 ## Pendências

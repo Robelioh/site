@@ -36,7 +36,7 @@ const ETAPAS = [
 ];
 
 /* ---------- layout comum (cabeçalho, rodapé, scripts) ---------- */
-function layout({ titulo, descricao, caminho, jsonld, conteudo }) {
+function layout({ titulo, descricao, caminho, jsonld, conteudo, noindex = false }) {
   const url = SITE + caminho;
   if (titulo.length > 65) avisos.push(`título longo (${titulo.length}): ${caminho}`);
   if (descricao.length > 160) avisos.push(`description longa (${descricao.length}): ${caminho}`);
@@ -47,7 +47,7 @@ function layout({ titulo, descricao, caminho, jsonld, conteudo }) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${esc(titulo)}</title>
   <meta name="description" content="${esc(descricao)}">
-  <link rel="canonical" href="${url}">
+  ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${url}">`}
   <meta property="og:title" content="${esc(titulo)}">
   <meta property="og:description" content="${esc(descricao)}">
   <meta property="og:type" content="website">
@@ -121,10 +121,10 @@ ${conteudo}
     </div>
   </footer>
 
-  <script type="application/ld+json">
+${jsonld.length ? `  <script type="application/ld+json">
 ${json(jsonld.length === 1 ? jsonld[0] : jsonld)}
   </script>
-
+` : ""}
   <a class="zap" href="${linkZap(`Olá! Quero conhecer o ${CONFIG.produto}.`)}" target="_blank" rel="noopener" aria-label="Conversar no WhatsApp">
     <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" stroke="none" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.5-.3Z"/></svg>
   </a>
@@ -299,6 +299,22 @@ function paginaHub() {
   return { caminho, html: layout({ titulo, descricao, caminho, jsonld, conteudo }) };
 }
 
+/* ---------- 404 ---------- */
+function pagina404() {
+  const conteudo = `    <section class="pg-hero">
+      <div class="wrap">
+        <p class="selo">Erro 404</p>
+        <h1>Página não encontrada</h1>
+        <p class="hero__sub">O endereço que você abriu não existe ou foi movido. Volte ao início ou escolha o seu segmento.</p>
+        <div class="pg-cta">
+          <a class="btn btn--pri btn--lg" href="/">Ir para o início</a>
+          <a class="btn btn--sec btn--lg" href="/segmentos/">Ver segmentos</a>
+        </div>
+      </div>
+    </section>`;
+  return layout({ titulo: "Página não encontrada | TeAtende", descricao: "A página que você procura não foi encontrada.", caminho: "/404.html", jsonld: [], conteudo, noindex: true });
+}
+
 /* ---------- execução ---------- */
 const slugs = new Set();
 const paginas = SEGMENTOS.map((s) => {
@@ -309,6 +325,7 @@ const paginas = SEGMENTOS.map((s) => {
 });
 const hub = paginaHub();
 for (const p of [...paginas, hub]) grava(p.caminho.slice(1) + "index.html", p.html);
+grava("404.html", pagina404());
 
 // sitemap.xml e robots.txt
 const urls = ["/", hub.caminho, ...paginas.map((p) => p.caminho)];
