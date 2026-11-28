@@ -16,7 +16,7 @@ const CONFIG = {
   email: "comercial@rbitecnologia.com.br",
   // TODO: telefone fixo (deixe "" para ocultar)
   telefone: "",
-  endereco: "Rua Manuel de Souza, 20, Sala 01 — Parque dos Verdes",
+  endereco: "Rua Manoel de Souza, 30, Sala 1 — Interlagos 3",
   cidade: "Araguari - MG",
   cep: "38445-560",
 };
